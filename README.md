@@ -1,13 +1,14 @@
-# Ticket Search API
+# Ticket Search API (airflow)
 
 A FastAPI-based service for fetching exchange rates from the National Bank of Kazakhstan.
 
 ## Features
 
 - 🔄 Fetch current exchange rates from National Bank of Kazakhstan
-- 💱 Query specific currency rates
+- 💱 Cache exchange rates
+- Search for tickets
 
-## Setup
+## Setup Local
 
 ### 1. Install Dependencies
 
@@ -34,4 +35,9 @@ Edit `.env` if needed to customize the National Bank API URL.
 
 ```bash
 uv run main.py
+```
+
+## Setup Dev
+```bash
+docker-compose up -d
 ```
