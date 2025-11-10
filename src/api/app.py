@@ -71,7 +71,6 @@ async def lifespan(app: FastAPI):
     log.info("Search request consumer task started.")
 
 
-
     yield  # The application is now running
     
 
@@ -82,6 +81,9 @@ async def lifespan(app: FastAPI):
     log.info("Search request consumer stopped.")
 
     await app.state.alpha_client.close()
+    await app.state.betta_client.close()
+    log.info("Provider clients closed.")
+    
     await app.state.redis.aclose()
     log.info("Redis connection pool closed.")
 
