@@ -1,0 +1,69 @@
+services:
+  redis:
+    image: "redis:alpine"
+    container_name: "ticket-search-redis"
+    command: ["redis-server", "--bind", "0.0.0.0", "--port", "6379"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - default
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight-data:/data
+    networks:
+      - default
+    depends_on:
+      - redis
+  
+  provider-alpha:
+    image: openresty/openresty:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ../../resources/nginx-alpha.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../../resources/provider-a.json:/data/db.json:ro
+  
+  provider-beta:
+    image: openresty/openresty:alpine
+    ports:
+      - "8081:80"
+    environment:
+      - API_DELAY=6  # Change this to customize delay
+    volumes:
+      - ../../resources/nginx-betta.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../../resources/provider-b.json:/data/db.json:ro
+  
+  service:
+    build:
+      context: ../../
+      dockerfile: build/local/Dockerfile
+    container_name: ticket-search-service
+    ports:
+      - "9000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - PROVIDER_ALPHA_URL=http://provider-alpha:80
+      - PROVIDER_BETA_URL=http://provider-beta:80
+    depends_on:
+      - redis
+      - provider-alpha
+      - provider-beta
+    networks:
+      - default
+
+volumes:
+  redis-data:
+  redis-insight-data:
+
+networks:
+  default:
+    name: ticket-search-network
+    driver: bridge
+
